@@ -1,0 +1,11 @@
+.git
+.vscode
+.idea
+*.bat
+docker-compose.yml
+Dockerfile
+README.md
+GUIA_USO.md
+RESUMEN_PROYECTO.md
+.DS_Store
+Thumbs.db

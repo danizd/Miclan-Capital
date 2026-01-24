@@ -1,0 +1,11 @@
+Fecha contable;Fecha valor;Concepto;Importe;Moneda;Saldo;Saldo;Moneda;Concepto ampliado;Categoria;Subcategoria;cuenta
+01/01/2024;01/01/2024;NOMINA ENERO;2500,00;EUR;2500,00;2500,00;EUR;Ingreso de nomina mensual Dani;Nomina;Salario;Cuenta Personal
+05/01/2024;05/01/2024;MERCADONA; -85,50;EUR;2414,50;2414,50;EUR;Compra semanal alimentación;Supermercado;Alimentación;Cuenta Compartida
+10/01/2024;10/01/2024;RECIBO LUZ; -62,20;EUR;2352,30;2352,30;EUR;Factura mensual electricidad;Hogar;Suministros;Cuenta Compartida
+15/01/2024;15/01/2024;GASOLINERA REPSOL; -55,00;EUR;2297,30;2297,30;EUR;Repostaje combustible diesel;Gasoil;Transporte;Cuenta Personal
+20/01/2024;20/01/2024;CUOTA COMUNIDAD; -45,00;EUR;2252,30;2252,30;EUR;Gasto comunidad propietarios;Hogar;Comunidad;Cuenta Compartida
+25/01/2024;25/01/2024;RESTAURANTE EL PASO; -42,00;EUR;2210,30;2210,30;EUR;Cena fin de semana;Ocio;Restaurantes;Cuenta Personal
+01/02/2024;01/02/2024;NOMINA FEBRERO;2550,00;EUR;4760,30;4760,30;EUR;Ingreso de nomina mensual Elena;Nomina;Salario;Cuenta Compartida
+05/02/2024;05/02/2024;CARREFOUR; -92,15;EUR;4668,15;4668,15;EUR;Compra mensual gran superficie;Supermercado;Alimentación;Cuenta Compartida
+15/02/2024;15/02/2024;HIPOTECA; -600,00;EUR;4068,15;4068,15;EUR;Pago mensual prestamo hipotecario;Hogar;Hipoteca;Cuenta Compartida
+28/02/2024;28/02/2024;TRANSFERENCIA AHORRO; -500,00;EUR;3568,15;3568,15;EUR;Ahorro mensual programado;Ahorro;Inversión;Cuenta Personal

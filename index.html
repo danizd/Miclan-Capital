@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miclan Capital</title>
+    <meta name="description" content="Cuadro de mandos financiero personal con análisis de ingresos, gastos y ahorro">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+
+    <!-- PapaParse para CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <p>Cargando datos financieros...</p>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>💰 Miclan Capital</h1>
+                    <p class="header-subtitle">Análisis completo de tus finanzas 2015-2025</p>
+                </div>
+                <div class="header-actions">
+                    <nav class="header-nav">
+                        <a href="#kpi-section" class="nav-link">Resumen KPIs</a>
+                        <a href="#charts-section" class="nav-link">Gráficos Globales</a>
+                        <a href="#specific-section" class="nav-link">Hogar y Super</a>
+                        <a href="#salaries-section" class="nav-link">Salarios</a>
+                        <a href="#vacations-section" class="nav-link">Vacaciones</a>
+                        <a href="#insights-section" class="nav-link">Insights</a>
+                        <a href="#table-section" class="nav-link">Tabla de Datos</a>
+                    </nav>
+                    <input type="file" id="csv-upload" accept=".csv" style="display: none;">
+                    <button id="upload-btn" class="btn btn-secondary" title="Cargar archivo CSV local">
+                        📂 Cargar CSV
+                    </button>
+                    <button id="refresh-btn" class="btn btn-secondary" title="Actualizar datos">
+                        🔄
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filters Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>🔍 Filtros</h3>
+                <button id="reset-filters" class="btn-link">Resetear</button>
+            </div>
+
+            <div class="filter-group">
+                <label for="date-from">Fecha desde:</label>
+                <input type="date" id="date-from" class="filter-input">
+            </div>
+
+            <div class="filter-group">
+                <label for="date-to">Fecha hasta:</label>
+                <input type="date" id="date-to" class="filter-input">
+            </div>
+
+            <div class="filter-group">
+                <label>Cuentas:</label>
+                <div id="account-filters" class="checkbox-group"></div>
+            </div>
+
+            <div class="filter-group">
+                <label>Tipo de movimiento:</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="movement-type" value="all" checked>
+                        <span>Todos</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="movement-type" value="income">
+                        <span>Ingresos</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="movement-type" value="expense">
+                        <span>Gastos</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label for="category-filter">Categorías:</label>
+                <select id="category-filter" class="filter-select" multiple size="8"></select>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- KPI Cards -->
+            <section id="kpi-section" class="kpi-section">
+                <div class="kpi-card kpi-income">
+                    <div class="kpi-icon">📈</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Total Ingresos</h3>
+                        <p class="kpi-value" id="kpi-income">€0</p>
+                        <span class="kpi-period" id="kpi-income-period"></span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-expense">
+                    <div class="kpi-icon">📉</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Total Gastos</h3>
+                        <p class="kpi-value" id="kpi-expense">€0</p>
+                        <span class="kpi-period" id="kpi-expense-period"></span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-savings">
+                    <div class="kpi-icon">💵</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Ahorro Total</h3>
+                        <p class="kpi-value" id="kpi-savings">€0</p>
+                        <span class="kpi-period" id="kpi-savings-rate"></span>
+                    </div>
+                </div>
+
+                <div id="kpi-balance-card" class="kpi-card kpi-balance" title="Click para mostrar/ocultar">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Saldo Actual</h3>
+                        <p class="kpi-value" id="kpi-balance" data-hidden="true">€0</p>
+                        <span class="kpi-period" id="kpi-balance-date"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section id="charts-section" class="charts-section">
+                <!-- Row 1: Category Analysis -->
+                <div class="chart-row">
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>Distribución de Gastos por Categoría</h3>
+                        </div>
+                        <canvas id="expenses-by-category-chart"></canvas>
+                    </div>
+
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>Gastos por Categoría (Detalle)</h3>
+                        </div>
+                        <canvas id="income-vs-expense-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Row 2: Temporal Evolution -->
+                <div class="chart-row">
+                    <div class="chart-container chart-full">
+                        <div class="chart-header">
+                            <h3>Evolución Temporal de Ingresos y Gastos</h3>
+                            <div class="chart-controls">
+                                <select id="temporal-view" class="chart-select">
+                                    <option value="yearly" selected>Anual</option>
+                                    <option value="monthly">Mensual</option>
+                                </select>
+                            </div>
+                        </div>
+                        <canvas id="temporal-evolution-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Row 3: Savings Analysis -->
+                <div class="chart-row">
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>Ahorro Mensual</h3>
+                        </div>
+                        <canvas id="monthly-savings-chart"></canvas>
+                    </div>
+
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>Saldo por Cuenta</h3>
+                        </div>
+                        <canvas id="balance-by-account-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Row 4: Account Analysis -->
+                <div class="chart-row">
+                    <div class="chart-container chart-full">
+                        <div class="chart-header">
+                            <h3>Evolución del Saldo por Cuenta</h3>
+                        </div>
+                        <canvas id="balance-evolution-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Specific Analysis Section -->
+            <section id="specific-section" class="charts-section">
+                <!-- Specific KPIs -->
+                <div class="specific-kpis-container">
+                    <div class="specific-kpi-card">
+                        <div class="specific-kpi-icon">🛒</div>
+                        <div class="specific-kpi-info">
+                            <span>Media Supermercado</span>
+                            <h4 id="avg-supermarket">€0/mes</h4>
+                        </div>
+                    </div>
+                    <div class="specific-kpi-card">
+                        <div class="specific-kpi-icon">⛽</div>
+                        <div class="specific-kpi-info">
+                            <span>Media Gasoil</span>
+                            <h4 id="avg-fuel">€0/mes</h4>
+                        </div>
+                    </div>
+                    <div class="specific-kpi-card">
+                        <div class="specific-kpi-icon">🏢</div>
+                        <div class="specific-kpi-info">
+                            <span>Media Comunidad</span>
+                            <h4 id="avg-community">€0/mes</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>🏠 Gasto Mensual (Comunidad e Hipoteca)</h3>
+                        </div>
+                        <canvas id="household-chart"></canvas>
+                    </div>
+
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>🛒 Gasto Anual Supermercado</h3>
+                        </div>
+                        <canvas id="supermarket-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Salaries Section -->
+            <section id="salaries-section" class="charts-section">
+                <div class="chart-row">
+                    <div class="chart-container chart-full">
+                        <div class="chart-header">
+                            <h3>💰 Evolución de Salarios Anuales (Dani vs Elena)</h3>
+                        </div>
+                        <canvas id="salaries-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vacations Section -->
+            <section id="vacations-section" class="charts-section">
+                <div class="chart-row">
+                    <div class="chart-container chart-full">
+                        <div class="chart-header">
+                            <h3>✈️ Evolución de Gastos en Vacaciones (Anual)</h3>
+                        </div>
+                        <canvas id="vacations-breakdown-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Insights Section -->
+            <section id="insights-section" class="insights-section">
+                <h2>📊 Insights y Análisis</h2>
+                <div class="insights-grid">
+                    <div class="insight-card">
+                        <h4>🏆 Top 10 Gastos Más Grandes</h4>
+                        <div id="top-expenses-list" class="insight-list"></div>
+                    </div>
+
+                    <div class="insight-card">
+                        <h4>🔄 Gastos Recurrentes</h4>
+                        <div id="recurring-expenses-list" class="insight-list"></div>
+                    </div>
+
+                    <div class="insight-card">
+                        <h4>⚠️ Alertas y Anomalías</h4>
+                        <div id="alerts-list" class="insight-list"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Transactions Table -->
+            <section id="table-section" class="table-section">
+                <div class="table-header">
+                    <h2>📋 Tabla de Movimientos</h2>
+                    <div class="table-controls">
+                        <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar...">
+                        <select id="sort-by" class="table-select">
+                            <option value="date-desc">Fecha (más reciente)</option>
+                            <option value="date-asc">Fecha (más antigua)</option>
+                            <option value="amount-desc">Importe (mayor)</option>
+                            <option value="amount-asc">Importe (menor)</option>
+                            <option value="category">Categoría</option>
+                        </select>
+                        <button id="export-table-btn" class="btn btn-small">📥 Exportar CSV</button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="transactions-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Concepto</th>
+                                <th>Categoría</th>
+                                <th>Subcategoría</th>
+                                <th>Cuenta</th>
+                                <th>Importe</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <div class="pagination">
+                        <button id="prev-page" class="btn-pagination">← Anterior</button>
+                        <span id="page-info">Página 1 de 1</span>
+                        <button id="next-page" class="btn-pagination">Siguiente →</button>
+                    </div>
+                    <div class="table-info">
+                        <span id="showing-info">Mostrando 0 de 0 registros</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+
+</html>

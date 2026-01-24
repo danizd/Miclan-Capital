@@ -1,0 +1,10 @@
+# Datos sensibles (Archivos reales)
+Cuentas_casa+elena2015-2025 - copia.csv
+Cuentas_casa+elena2015-2025.csv
+Vacaciones.csv
+
+# Archivos de sistema y logs
+*.log
+node_modules/
+.DS_Store
+Thumbs.db
