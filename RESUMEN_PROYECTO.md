@@ -16,7 +16,8 @@ dashboard_cuentas/
 ├── app.js                                  # Lógica completa de la aplicación
 ├── README.md                               # Documentación técnica
 ├── GUIA_USO.md                            # Guía de usuario detallada
-└── Cuentas_casa+elena2015-2025 - copia.csv # Datos financieros (8,770 registros)
+├── datos.csv                               # Tu archivo real (ignorar en Git)
+└── datos_ejemplo.csv                       # Datos de prueba para Git
 ```
 
 ---
