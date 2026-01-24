@@ -2,7 +2,12 @@
 
 Dashboard interactivo para análisis de movimientos bancarios con visualizaciones avanzadas, filtros dinámicos y métricas financieras.
 
-## 🚀 Características
+## �️ Vista Previa
+
+![Dashboard Principal](capturas/Captura1.png)
+![Análisis Detallado](capturas/Captura%20de%20pantalla%202026-01-24%20120549.png)
+
+## �🚀 Características
 
 ### 📊 Visualizaciones
 - **Distribución de gastos por categoría** (gráfico circular)
