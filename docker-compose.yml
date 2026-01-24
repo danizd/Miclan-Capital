@@ -8,7 +8,6 @@ services:
     ports:
       - "8000:80"
     volumes:
-      # Montar el archivo CSV como volumen para permitir actualizaciones de datos en vivo
-      # Asegúrate de que el nombre del archivo coincida con el que tienes en local
-      - ./Cuentas_casa+elena2015-2025.csv:/usr/share/nginx/html/Cuentas_casa+elena2015-2025.csv
+      # Montar tu archivo real con el nombre genérico 'datos.csv' para que el dashboard lo detecte siempre
+      - ./datos.csv:/usr/share/nginx/html/datos.csv
     restart: unless-stopped
