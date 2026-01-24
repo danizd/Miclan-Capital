@@ -111,19 +111,24 @@ async function loadData(fileContent = null) {
             mainCsv = fileContent;
         } else {
             // Estrategia de carga dinámica (Orden de prioridad)
-            const filesToTry = ['datos.csv', CONFIG.CSV_FILE, 'Cuentas_casa+elena2015-2025.csv', 'datos_ejemplo.csv'];
+            const filesToTry = ['datos.csv', 'Cuentas_casa+elena2015-2025.csv', 'datos_ejemplo.csv'];
 
             for (const fileName of filesToTry) {
                 try {
-                    const response = await fetch(fileName);
+                    // Cache busting para asegurar que lee el archivo más reciente tras cambios en Docker/Volúmenes
+                    const response = await fetch(`${fileName}?t=${Date.now()}`, { cache: 'no-store' });
+
                     if (response.ok) {
                         mainCsv = await response.text();
                         console.log(`Cargado exitosamente: ${fileName}`);
 
-                        // Si es el de ejemplo, avisamos al usuario
-                        if (fileName === 'datos_ejemplo.csv') {
-                            const subtitle = document.querySelector('.header-subtitle');
-                            if (subtitle) subtitle.textContent = 'Mostrando datos de ejemplo (archivo real no encontrado)';
+                        const subtitle = document.querySelector('.header-subtitle');
+                        if (subtitle) {
+                            if (fileName === 'datos_ejemplo.csv') {
+                                subtitle.textContent = 'Mostrando datos de ejemplo (archivo real no encontrado)';
+                            } else {
+                                subtitle.textContent = `Archivo cargado: ${fileName}`;
+                            }
                         }
                         break;
                     }

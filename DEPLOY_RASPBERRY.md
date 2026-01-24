@@ -74,9 +74,17 @@ Para entrar desde tu móvil, tablet u otro PC:
 2. **Abre el navegador en cualquier dispositivo de la red:**
    `http://192.168.1.15:8000`
 
-## 6. Actualización de Datos
+3. **Verificación Visual:**
+   Mira el subtítulo debajo del título principal. Debe decir **"Archivo cargado: datos.csv"**. Si dice "datos de ejemplo", la aplicación no está encontrando tu archivo.
 
-Cuando tengas nuevos movimientos, simplemente sobreescribe el archivo `.csv` en la carpeta de la Raspberry Pi. Como está montado como un **volumen**, los cambios se verán reflejados al refrescar el navegador (no hace falta reiniciar Docker).
+## 6. Actualización de Datos y Caché
+
+Cuando tengas nuevos movimientos, simplemente sobreescribe el archivo `.csv` en la carpeta de la Raspberry Pi.
+
+⚠️ **Nota sobre la caché:** Aunque he incluido un sistema antibloqueo automático en el código, si tras actualizar tus datos sigues viendo lo anterior, intenta:
+1. Recargar con `Ctrl + F5`.
+2. Abrir en una ventana de incógnito.
+3. Asegurarte de que has renombrado el archivo a **`datos.csv`** en la carpeta del host.
 
 ---
 **Tip:** Para que el dashboard se inicie solo tras un apagón, `restart: unless-stopped` ya está configurado en tu `docker-compose.yml`.
