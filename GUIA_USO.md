@@ -41,7 +41,7 @@ Luego abre en tu navegador: **http://localhost:8000**
 
 **Ver solo una cuenta específica:**
 1. Desmarca todas las cuentas
-2. Marca solo la cuenta que quieres ver (ej: `cuenta_casa`)
+2. Marca solo la cuenta que quieres ver (ej: `Cuenta_Principal`)
 3. Los gráficos mostrarán solo esa cuenta
 
 **Comparar dos cuentas:**
@@ -75,12 +75,12 @@ Luego abre en tu navegador: **http://localhost:8000**
 ### Total Ingresos
 - **Qué muestra**: Suma de todos los movimientos positivos
 - **Uso**: Conocer tus ingresos totales en el periodo
-- **Ejemplo**: 379.158,69 € (587 movimientos)
+- **Ejemplo**: 15.000,00 € (587 movimientos)
 
 ### Total Gastos
 - **Qué muestra**: Suma de todos los movimientos negativos (en valor absoluto)
 - **Uso**: Conocer tus gastos totales
-- **Ejemplo**: 372.153,60 € (8182 movimientos)
+- **Ejemplo**: 12.000,00 € (8182 movimientos)
 
 ### Ahorro Total
 - **Qué muestra**: Diferencia entre ingresos y gastos

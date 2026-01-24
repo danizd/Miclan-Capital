@@ -92,7 +92,7 @@ dashboard_cuentas/
 
 2. **Evolución de Salarios Anuales** (Nuevo)
    - Gráfico comparativo de ingresos laborales
-   - Desglose por persona: Dani vs Elena
+   - Desglose por persona: Persona A vs Persona B
    - Detección automática de conceptos (nómina, salario, sueldo)
 
 3. **Evolución de Gastos en Vacaciones** (Nuevo)
@@ -163,7 +163,7 @@ dashboard_cuentas/
 ### Estadísticas del CSV
 - **Total de movimientos**: 8,770
 - **Periodo**: 2015-2025 (10 años)
-- **Cuentas**: 5 (cuenta_casa, cuenta_dani, cuenta_elena, cuenta_openbank, cuenta_saloa)
+- **Cuentas**: 5 (Cuenta_Personal_1, Cuenta_Personal_2, Cuenta_Compartida_1, Cuenta_Compartida_2, Cuenta_Ahorro)
 - **Categorías**: 30
 - **Ingresos**: 587 movimientos (€379,158.69)
 - **Gastos**: 8,183 movimientos (€372,153.60)

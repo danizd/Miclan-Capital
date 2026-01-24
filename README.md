@@ -153,7 +153,7 @@ El dashboard espera un CSV con las siguientes columnas (separadas por `;`):
 | Concepto ampliado | Descripción detallada | Mercadona... |
 | Categoria | Categoría del gasto | supermercado |
 | Subcategoria | Subcategoría | alimentación |
-| cuenta | Nombre de la cuenta | cuenta_casa |
+| cuenta | Nombre de la cuenta | Cuenta_Principal |
 
 **Formato de números**: Europeo (punto para miles, coma para decimales)
 - Ejemplo: `1.234,56` = mil doscientos treinta y cuatro euros con 56 céntimos
