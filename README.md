@@ -5,7 +5,7 @@ Dashboard interactivo para análisis de movimientos bancarios con visualizacione
 ## �️ Vista Previa
 
 ![Dashboard Principal](capturas/Captura1.png)
-![Análisis Detallado](capturas/Captura%20de%20pantalla%202026-01-24%20120549.png)
+![Análisis Detallado](capturas/Captura2.png)
 
 ## �🚀 Características
 
@@ -189,14 +189,7 @@ El dashboard es completamente responsive y se adapta a:
 - 📱 Tablet (768px - 1200px)
 - 📱 Mobile (< 768px)
 
-## 🎯 Próximas Mejoras
 
-- [ ] Modo claro/oscuro toggle
-- [ ] Comparación entre periodos
-- [ ] Proyecciones de ahorro
-- [ ] Presupuestos por categoría
-- [ ] Exportación a PDF
-- [ ] Gráficos adicionales (treemap, sankey)
 
 ## 📄 Licencia
 
