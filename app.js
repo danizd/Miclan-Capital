@@ -2,7 +2,7 @@
 // CONFIGURACIÓN GLOBAL
 // ===========================
 const CONFIG = {
-    CSV_FILE: 'Cuentas_casa+elena2015-2025 - copia.csv',
+    CSV_FILE: 'datos.csv',
     ROWS_PER_PAGE: 50,
     TOP_CATEGORIES: 10,
     CHART_COLORS: {
@@ -110,21 +110,29 @@ async function loadData(fileContent = null) {
         if (fileContent) {
             mainCsv = fileContent;
         } else {
-            // Intento de carga automática con fallback
-            try {
-                const responseMain = await fetch(CONFIG.CSV_FILE);
-                if (!responseMain.ok) throw new Error('File not found');
-                mainCsv = await responseMain.text();
-            } catch (e) {
-                console.warn('Principal CSV not found, trying example data...');
-                const responseExample = await fetch('datos_ejemplo.csv');
-                if (!responseExample.ok) throw new Error('Example data not found');
-                mainCsv = await responseExample.text();
+            // Estrategia de carga dinámica (Orden de prioridad)
+            const filesToTry = ['datos.csv', CONFIG.CSV_FILE, 'Cuentas_casa+elena2015-2025.csv', 'datos_ejemplo.csv'];
 
-                // Actualizar subtítulo para indicar que son datos de ejemplo
-                const subtitle = document.querySelector('.header-subtitle');
-                if (subtitle) subtitle.textContent = 'Mostrando datos de ejemplo (archivo real no encontrado)';
+            for (const fileName of filesToTry) {
+                try {
+                    const response = await fetch(fileName);
+                    if (response.ok) {
+                        mainCsv = await response.text();
+                        console.log(`Cargado exitosamente: ${fileName}`);
+
+                        // Si es el de ejemplo, avisamos al usuario
+                        if (fileName === 'datos_ejemplo.csv') {
+                            const subtitle = document.querySelector('.header-subtitle');
+                            if (subtitle) subtitle.textContent = 'Mostrando datos de ejemplo (archivo real no encontrado)';
+                        }
+                        break;
+                    }
+                } catch (e) {
+                    continue;
+                }
             }
+
+            if (!mainCsv) throw new Error('No se pudo encontrar ningún archivo CSV');
         }
 
         // Carga robusta para Vacaciones con encoding Windows-1252
