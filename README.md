@@ -105,7 +105,7 @@ dashboard_cuentas/
 ├── styles.css                          # Estilos del dashboard
 ├── app.js                              # Lógica de la aplicación
 ├── datos_ejemplo.csv                   # Datos de prueba para Git/Demostración
-├── Cuentas_casa+elena2015-2025...csv   # Tu archivo real (ignorar en Git)
+├── datos.csv                           # Tu archivo real (ignorar en Git)
 ├── Vacaciones.csv                      # Datos de vacaciones (Año;Destino;Coste)
 └── README.md                           # Este archivo
 ```
@@ -131,7 +131,7 @@ Edita las constantes en `app.js`:
 
 ```javascript
 const CONFIG = {
-    CSV_FILE: 'tu-archivo.csv',    // Nombre del CSV
+    CSV_FILE: 'datos.csv',    // Nombre del CSV
     ROWS_PER_PAGE: 50,              // Filas por página
     TOP_CATEGORIES: 10,             // Categorías a mostrar
     // ... más opciones ...
