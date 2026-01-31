@@ -1541,3 +1541,4 @@ function initializeApp() {
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
 });
+

@@ -152,18 +152,20 @@ body {
 
 .header-nav {
     display: flex;
-    gap: var(--spacing-lg);
-    margin-right: var(--spacing-xl);
+    gap: var(--spacing-md);
+    margin-right: var(--spacing-lg);
+    flex-wrap: wrap;
 }
 
 .nav-link {
     color: var(--text-secondary);
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     transition: all var(--transition-fast);
     padding: var(--spacing-xs) 0;
     position: relative;
+    white-space: nowrap;
 }
 
 .nav-link:hover {
@@ -279,6 +281,13 @@ body {
     margin-left: 280px;
     padding: var(--spacing-2xl);
     max-width: calc(1600px + 280px);
+}
+
+/* Main content without sidebar (for standalone pages) */
+.main-content-full {
+    padding: var(--spacing-2xl);
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
 /* ===========================
@@ -768,6 +777,24 @@ body {
     background: var(--bg-hover);
 }
 
+.btn-compras {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.btn-compras:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+}
+
 .btn-small {
     padding: var(--spacing-xs) var(--spacing-md);
     font-size: 0.85rem;
@@ -888,4 +915,228 @@ body {
 
 .fade-in {
     animation: fadeIn 0.5s ease-out;
+}
+
+/* ===========================
+   COMPRAS ONLINE SECTION
+   =========================== */
+.compras-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.compras-kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+}
+
+.compras-kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.compras-kpi-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(79, 70, 229, 0.1) 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.compras-kpi-info {
+    flex: 1;
+}
+
+.compras-kpi-info span {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.compras-kpi-info h4 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Compras Form */
+.compras-form-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.compras-form-container h3 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.compras-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.form-group input {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all var(--transition-fast);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    align-items: flex-end;
+}
+
+.form-actions button {
+    width: 100%;
+}
+
+/* Compras Table */
+.compras-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.compras-table-container .table-header h3 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.recibido {
+    background: var(--success-light);
+    color: var(--success-color);
+}
+
+.status-badge.pendiente {
+    background: var(--warning-light);
+    color: var(--warning-color);
+}
+
+.status-badge.no-llego {
+    background: var(--danger-light);
+    color: var(--danger-color);
+}
+
+/* Toggle Status Button */
+.toggle-status-btn {
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.toggle-status-btn:hover {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.toggle-status-btn.received {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+.toggle-status-btn.received:hover {
+    background: var(--warning-color);
+    border-color: var(--warning-color);
+}
+
+/* Delete Button */
+.delete-btn {
+    padding: 6px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.delete-btn:hover {
+    background: var(--danger-color);
+    border-color: var(--danger-color);
+    color: white;
+}
+
+/* Responsive for Compras */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .compras-kpis {
+        grid-template-columns: 1fr;
+    }
 }

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compras Online - Miclan Capital</title>
+    <meta name="description" content="Gestión y análisis de compras online">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+
+    <!-- PapaParse para CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <p>Cargando compras online...</p>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app" style="display: none;">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>🛍️ Compras Online - Miclan Capital</h1>
+                    <p class="header-subtitle">Gestión y análisis de tus compras online 2017-2026</p>
+                </div>
+                <div class="header-actions">
+                    <nav class="header-nav">
+                        <a href="index.html" class="nav-link">← Volver al Dashboard</a>
+                    </nav>
+                    <button id="refresh-btn" class="btn btn-secondary" title="Actualizar datos">
+                        🔄
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content-full">
+            <!-- Compras KPIs -->
+            <section class="kpi-section">
+                <div class="kpi-card kpi-income">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Total Gastado</h3>
+                        <p class="kpi-value" id="compras-total">€0</p>
+                        <span class="kpi-period" id="compras-period">Todos los años</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-expense">
+                    <div class="kpi-icon">📦</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Número de Compras</h3>
+                        <p class="kpi-value" id="compras-count">0</p>
+                        <span class="kpi-period" id="compras-count-period"></span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-savings">
+                    <div class="kpi-icon">💸</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Ahorro en Ofertas</h3>
+                        <p class="kpi-value" id="compras-savings">€0</p>
+                        <span class="kpi-period" id="compras-savings-percent"></span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-balance">
+                    <div class="kpi-icon">⏳</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-label">Pedidos Pendientes</h3>
+                        <p class="kpi-value" id="compras-pending">0</p>
+                        <span class="kpi-period" id="compras-pending-value"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-section">
+                <!-- Charts Row 1 -->
+                <div class="chart-row">
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>📊 Evolución de Gastos por Año</h3>
+                        </div>
+                        <canvas id="compras-yearly-chart"></canvas>
+                    </div>
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>🏪 Distribución por Tienda</h3>
+                        </div>
+                        <canvas id="compras-store-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Charts Row 2 -->
+                <div class="chart-row">
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>📈 Gastos Mensuales 2025</h3>
+                        </div>
+                        <canvas id="compras-monthly-chart"></canvas>
+                    </div>
+                    <div class="chart-container chart-half">
+                        <div class="chart-header">
+                            <h3>🏆 Top 10 Productos Más Caros</h3>
+                        </div>
+                        <canvas id="compras-top-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Add New Purchase Form -->
+            <section class="compras-form-container">
+                <h3>➕ Añadir Nueva Compra 2026</h3>
+                <form id="compras-form" class="compras-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="compra-producto">Producto *</label>
+                            <input type="text" id="compra-producto" required placeholder="Nombre del producto">
+                        </div>
+                        <div class="form-group">
+                            <label for="compra-fecha">Fecha *</label>
+                            <input type="date" id="compra-fecha" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="compra-tienda">Tienda *</label>
+                            <input type="text" id="compra-tienda" required placeholder="Amazon, AliExpress, etc.">
+                        </div>
+                        <div class="form-group">
+                            <label for="compra-precio">Precio *</label>
+                            <input type="number" id="compra-precio" step="0.01" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="compra-precio-sin-oferta">Precio sin oferta (opcional)</label>
+                            <input type="number" id="compra-precio-sin-oferta" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group form-actions">
+                            <button type="submit" class="btn btn-primary">💾 Guardar Compra</button>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Compras Table -->
+            <section class="compras-table-container">
+                <div class="table-header">
+                    <h3>📋 Listado de Compras</h3>
+                    <div class="table-controls">
+                        <input type="text" id="compras-search" class="search-input" placeholder="🔍 Buscar producto...">
+                        <select id="compras-filter-store" class="table-select">
+                            <option value="">Todas las tiendas</option>
+                        </select>
+                        <select id="compras-filter-status" class="table-select">
+                            <option value="">Todos los estados</option>
+                            <option value="Recibido">Recibido</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="No llegó">No llegó</option>
+                        </select>
+                        <select id="compras-filter-year" class="table-select">
+                            <option value="">Todos los años</option>
+                        </select>
+                        <button id="export-compras-btn" class="btn btn-small">📥 Exportar 2026</button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="compras-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Fecha</th>
+                                <th>Tienda</th>
+                                <th>Estado</th>
+                                <th>Precio</th>
+                                <th>Precio s/oferta</th>
+                                <th>Ahorro</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compras-tbody"></tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <div class="pagination">
+                        <button id="compras-prev-page" class="btn-pagination">← Anterior</button>
+                        <span id="compras-page-info">Página 1 de 1</span>
+                        <button id="compras-next-page" class="btn-pagination">Siguiente →</button>
+                    </div>
+                    <div class="table-info">
+                        <span id="compras-showing-info">Mostrando 0 de 0 compras</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="compras.js"></script>
+</body>
+
+</html>
