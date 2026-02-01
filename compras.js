@@ -87,13 +87,37 @@ async function loadComprasOnlineData() {
     for (const year of years) {
         try {
             console.log(`📂 Cargando ${year}.csv...`);
-            const response = await fetch(`Compras-online/${year}.csv`);
 
-            if (!response.ok) {
-                console.warn(`⚠️ No se pudo cargar ${year}.csv - HTTP ${response.status}`);
+            // Intentar diferentes rutas posibles
+            const possiblePaths = [
+                `Compras-online/${year}.csv`,
+                `./Compras-online/${year}.csv`,
+                `/Compras-online/${year}.csv`
+            ];
+
+            let response = null;
+            let successPath = null;
+
+            for (const path of possiblePaths) {
+                try {
+                    const testResponse = await fetch(path);
+                    if (testResponse.ok) {
+                        response = testResponse;
+                        successPath = path;
+                        break;
+                    }
+                } catch (e) {
+                    // Continuar con la siguiente ruta
+                }
+            }
+
+            if (!response || !response.ok) {
+                console.warn(`⚠️ No se pudo cargar ${year}.csv en ninguna ruta`);
                 failedYears.push(year);
                 continue;
             }
+
+            console.log(`✓ Encontrado en: ${successPath}`);
 
             const text = await response.text();
 

@@ -1,11 +1,33 @@
+# Control de versiones
 .git
+.gitignore
+
+# IDEs
 .vscode
 .idea
+
+# Scripts locales
 *.bat
+
+# Archivos de Docker (no copiar al contenedor)
 docker-compose.yml
 Dockerfile
+
+# Documentación (no necesaria en producción)
 README.md
 GUIA_USO.md
 RESUMEN_PROYECTO.md
+DEPLOY_RASPBERRY.md
+
+# Archivos de sistema
 .DS_Store
 Thumbs.db
+
+# Datos sensibles que NO queremos en la imagen base
+# (se montarán como volumen en docker-compose)
+Cuentas_casa+elena2015-2025*.csv
+datos.csv
+Vacaciones.csv
+
+# IMPORTANTE: Compras-online/ NO está en .dockerignore
+# Se debe incluir en la imagen o montar como volumen
