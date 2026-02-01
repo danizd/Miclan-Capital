@@ -14,7 +14,12 @@ const CONFIG = {
 const utils = {
     parseAmount(str) {
         if (!str) return 0;
-        const cleaned = str.toString().replace(/[€\s]/g, '').replace(',', '.');
+        let cleaned = str.toString().replace(/[€\s]/g, '');
+        // If it contains a comma, assume it's the decimal separator (Spanish format)
+        // Remove all dots (thousands separators) and replace comma with dot
+        if (cleaned.includes(',')) {
+            cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+        }
         return parseFloat(cleaned) || 0;
     },
 
@@ -74,53 +79,154 @@ const comprasState = {
 async function loadComprasOnlineData() {
     const years = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
     const allCompras = [];
+    let loadedYears = [];
+    let failedYears = [];
+
+    console.log('🔄 Iniciando carga de datos de compras...');
 
     for (const year of years) {
         try {
+            console.log(`📂 Cargando ${year}.csv...`);
             const response = await fetch(`Compras-online/${year}.csv`);
-            if (!response.ok) continue;
+
+            if (!response.ok) {
+                console.warn(`⚠️ No se pudo cargar ${year}.csv - HTTP ${response.status}`);
+                failedYears.push(year);
+                continue;
+            }
 
             const text = await response.text();
+
+            if (!text || text.trim().length === 0) {
+                console.warn(`⚠️ ${year}.csv está vacío`);
+                failedYears.push(year);
+                continue;
+            }
+
             const result = Papa.parse(text, {
                 header: false,
                 skipEmptyLines: true
             });
 
-            // Parse CSV data (skip header rows)
-            const rows = result.data.slice(3); // Skip first 3 rows (headers)
+            if (!result || !result.data || result.data.length === 0) {
+                console.warn(`⚠️ No se pudieron parsear datos de ${year}.csv`);
+                failedYears.push(year);
+                continue;
+            }
 
-            rows.forEach(row => {
-                if (row.length >= 7 && row[2] && row[3]) {
-                    const producto = row[2]?.trim();
-                    const fecha = row[3]?.trim();
-                    const tienda = row[4]?.trim();
-                    const estado = row[5]?.trim() || 'Recibido';
-                    const precio = row[6]?.trim();
-                    const precioSinOferta = row[7]?.trim() || '';
+            const rows = result.data;
+            let headerRowIndex = -1;
+            const colMap = {
+                producto: -1,
+                fecha: -1,
+                tienda: -1,
+                estado: -1,
+                precio: -1,
+                precioSinOferta: -1
+            };
 
-                    if (producto && fecha && precio) {
-                        allCompras.push({
-                            id: `${year}-${allCompras.length}`,
-                            producto,
-                            fecha,
-                            tienda,
-                            estado,
-                            precio: utils.parseAmount(precio),
-                            precioSinOferta: precioSinOferta ? utils.parseAmount(precioSinOferta) : 0,
-                            year,
-                            source: 'csv'
+            // Find header row dynamically
+            for (let i = 0; i < Math.min(rows.length, 10); i++) {
+                try {
+                    const rowNormalized = rows[i].map(cell => cell ? cell.toString().trim().toLowerCase() : '');
+
+                    // Check if this row looks like a header (must contain at least 'producto' and 'fecha')
+                    if (rowNormalized.includes('producto') && (rowNormalized.includes('fecha') || rowNormalized.includes('precio'))) {
+                        headerRowIndex = i;
+
+                        // Map columns
+                        rowNormalized.forEach((cell, index) => {
+                            if (cell === 'producto') colMap.producto = index;
+                            else if (cell === 'fecha') colMap.fecha = index;
+                            else if (cell === 'tienda') colMap.tienda = index;
+                            else if (cell === 'estado') colMap.estado = index;
+                            else if (cell === 'precio') colMap.precio = index;
+                            else if (cell === 'precio sin oferta') colMap.precioSinOferta = index;
                         });
+                        break;
                     }
+                } catch (headerError) {
+                    console.warn(`Error procesando fila ${i} de ${year}.csv:`, headerError);
                 }
-            });
+            }
+
+            if (headerRowIndex === -1) {
+                console.warn(`⚠️ No se encontró la fila de cabecera en ${year}.csv`);
+                failedYears.push(year);
+                continue;
+            }
+
+            console.log(`✓ Cabecera encontrada en fila ${headerRowIndex} de ${year}.csv`);
+            let itemsLoaded = 0;
+
+            // Process rows after header
+            for (let i = headerRowIndex + 1; i < rows.length; i++) {
+                try {
+                    const row = rows[i];
+
+                    // Skip if row doesn't have enough columns or key data
+                    if (!row || row.length < 2) continue;
+
+                    const producto = colMap.producto !== -1 ? row[colMap.producto]?.trim() : null;
+                    const precioStr = colMap.precio !== -1 ? row[colMap.precio]?.trim() : null;
+
+                    // Skip rows that don't look like valid product entries (e.g. totals or empty lines)
+                    // Note: older files might miss 'fecha', so we default it if missing but require producto and precio
+                    if (!producto || !precioStr) continue;
+
+                    // Default date to 01/01/YEAR if missing
+                    let fecha = colMap.fecha !== -1 ? row[colMap.fecha]?.trim() : null;
+                    if (!fecha || fecha === '') {
+                        fecha = `01/01/${year}`;
+                    }
+
+                    const tienda = colMap.tienda !== -1 ? (row[colMap.tienda]?.trim() || 'Sin tienda') : 'Sin tienda';
+                    const estado = colMap.estado !== -1 ? (row[colMap.estado]?.trim() || 'Recibido') : 'Recibido';
+                    const precioSinOfertaStr = colMap.precioSinOferta !== -1 ? row[colMap.precioSinOferta]?.trim() : '';
+
+                    allCompras.push({
+                        id: `${year}-${allCompras.length}`,
+                        producto,
+                        fecha,
+                        tienda,
+                        estado,
+                        precio: utils.parseAmount(precioStr),
+                        precioSinOferta: precioSinOfertaStr ? utils.parseAmount(precioSinOfertaStr) : 0,
+                        year,
+                        source: 'csv'
+                    });
+                    itemsLoaded++;
+                } catch (rowError) {
+                    console.warn(`Error procesando fila ${i} de ${year}.csv:`, rowError);
+                }
+            }
+
+            console.log(`✅ ${year}.csv cargado: ${itemsLoaded} productos`);
+            loadedYears.push(year);
+
         } catch (error) {
-            console.warn(`No se pudo cargar ${year}.csv:`, error);
+            console.error(`❌ Error cargando ${year}.csv:`, error);
+            failedYears.push(year);
         }
     }
 
     // Load 2026 data from localStorage
-    const data2026 = JSON.parse(localStorage.getItem('compras2026') || '[]');
-    allCompras.push(...data2026);
+    try {
+        const data2026 = JSON.parse(localStorage.getItem('compras2026') || '[]');
+        if (data2026.length > 0) {
+            allCompras.push(...data2026);
+            console.log(`✅ Datos 2026 cargados desde localStorage: ${data2026.length} productos`);
+        }
+    } catch (error) {
+        console.error('❌ Error cargando datos 2026 desde localStorage:', error);
+    }
+
+    console.log(`📊 Resumen de carga:`);
+    console.log(`   - Años cargados: ${loadedYears.join(', ')}`);
+    if (failedYears.length > 0) {
+        console.log(`   - Años fallidos: ${failedYears.join(', ')}`);
+    }
+    console.log(`   - Total productos: ${allCompras.length}`);
 
     comprasState.allData = allCompras;
     comprasState.filteredData = allCompras;
