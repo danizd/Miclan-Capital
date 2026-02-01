@@ -4,6 +4,9 @@ Cuentas_casa+elena2015-2025.csv
 datos.csv
 Vacaciones.csv
 
+# Compras online (datos personales)
+Compras-online/
+
 # Archivos de sistema y logs
 *.log
 node_modules/
