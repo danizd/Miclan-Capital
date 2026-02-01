@@ -5,7 +5,10 @@ datos.csv
 Vacaciones.csv
 
 # Compras online (datos personales)
-Compras-online/
+# Excluir todos los CSV excepto los de ejemplo
+Compras-online/*.csv
+!Compras-online/2024.csv
+!Compras-online/2025.csv
 
 # Archivos de sistema y logs
 *.log
