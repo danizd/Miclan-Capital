@@ -118,8 +118,11 @@ async function loadComprasOnlineData() {
                 }
             }
 
+
+
+
             if (headerRowIndex === -1) {
-                console.warn(`No se encontró la fila de cabecera en ${year}.csv`);
+                console.warn(`AA No se encontró la fila de cabecera en ${year}.csv`);
                 continue;
             }
 
