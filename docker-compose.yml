@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  dashboard-cuentas:
-    image: dashboard-cuentas
+  miclan-capital:
+    image: miclan-capital
     build: .
-    container_name: dashboard_financiero
+    container_name: miclan_capital
     ports:
       - "8000:80"
     volumes:
