@@ -1,13 +1,37 @@
 version: '3.8'
 
 services:
-  miclan-capital:
-    image: miclan-capital
-    build: .
-    container_name: miclan_capital
+  # Servidor API Node.js
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: miclan_capital_api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./Compras-online:/app/Compras-online
+    restart: unless-stopped
+    networks:
+      - miclan-network
+
+  # Servidor Web
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: miclan_capital_web
     ports:
       - "8000:80"
     volumes:
-      # Montar tu archivo real con el nombre genérico 'datos.csv' para que el dashboard lo detecte siempre
       - ./datos.csv:/usr/share/nginx/html/datos.csv
+      - ./Compras-online:/usr/share/nginx/html/Compras-online
     restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - miclan-network
+
+networks:
+  miclan-network:
+    driver: bridge
