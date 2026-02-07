@@ -5,13 +5,16 @@ datos.csv
 Vacaciones.csv
 
 # Compras online (datos personales)
-# Excluir todos los CSV excepto los de ejemplo
-Compras-online/*.csv
-!Compras-online/2024.csv
-!Compras-online/2025.csv
+# Mantener los archivos de ejemplo pero excluir los generados dinámicamente
+Compras-online/2026.csv
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
 
 # Archivos de sistema y logs
 *.log
-node_modules/
 .DS_Store
 Thumbs.db

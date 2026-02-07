@@ -1,13 +1,25 @@
 @echo off
-title Dashboard Financiero Personal
+title Dashboard Financiero Personal + API
 echo ====================================================
 echo      INICIANDO DASHBOARD FINANCIERO PERSONAL
 echo ====================================================
 echo.
-echo [1/2] Iniciando servidor local en el puerto 8000...
-echo [2/2] Abriendo navegador predeterminado...
+echo [1/3] Verificando instalacion de dependencias...
+if not exist "node_modules" (
+    echo Instalando dependencias de Node.js...
+    call npm install
+)
 echo.
-echo  > Para DETENER el servidor, cierra esta ventana.
+echo [2/3] Iniciando servidor Node.js (API) en puerto 3000...
+start /B node server.js
+timeout /t 2 /nobreak >nul
+
+echo [3/3] Iniciando servidor web en puerto 8000...
+echo.
+echo  ^> Servidor API: http://localhost:3000
+echo  ^> Dashboard Web: http://localhost:8000
+echo.
+echo  ^> Para DETENER los servidores, cierra esta ventana.
 echo.
 
 :: Abrir el navegador en localhost:8000

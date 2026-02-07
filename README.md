@@ -52,29 +52,37 @@ Dashboard interactivo para análisis de movimientos bancarios con visualizacione
 
 ## 📦 Instalación
 
-### Opción 1: Servidor Local Simple
+### Opción 1: Inicio Rápido con start.bat (Windows) ✨
 
-1. Abre una terminal en la carpeta del proyecto
-2. Ejecuta un servidor HTTP local:
+**La forma más sencilla de iniciar todo:**
 
-**Python 3:**
+1. Haz doble clic en `start.bat`
+2. El script instalará automáticamente las dependencias de Node.js si es necesario
+3. Iniciará tanto el servidor API (puerto 3000) como el servidor web (puerto 8000)
+4. Abrirá tu navegador en `http://localhost:8000`
+
+**Nota**: Necesitas tener Node.js y Python instalados.
+
+### Opción 2: Inicio Manual
+
+**Instalar dependencias (solo la primera vez):**
+```bash
+npm install
+```
+
+**Iniciar el servidor API:**
+```bash
+npm start
+```
+
+**En otra terminal, iniciar el servidor web:**
 ```bash
 python -m http.server 8000
 ```
 
-**Node.js (si tienes http-server instalado):**
-```bash
-npx http-server -p 8000
-```
+**Abrir navegador en:** `http://localhost:8000`
 
-**PowerShell (Windows):**
-```powershell
-python -m http.server 8000
-```
-
-3. Abre tu navegador en: `http://localhost:8000`
-
-### Opción 2: Docker (Recomendado) 🐳
+### Opción 3: Docker (Recomendado para producción) 🐳
 
 Si tienes Docker instalado, esta es la forma más limpia de usar la aplicación.
 
@@ -99,16 +107,44 @@ Si simplemente quieres probar la aplicación sin configurar nada, el dashboard c
 ## 📁 Estructura del Proyecto
 
 ```
-dashboard_cuentas/
+miclan-capital/
 │
-├── index.html                          # Página principal
+├── index.html                          # Dashboard principal
+├── compras.html                        # Dashboard de compras online
 ├── styles.css                          # Estilos del dashboard
-├── app.js                              # Lógica de la aplicación
-├── datos_ejemplo.csv                   # Datos de prueba para Git/Demostración
-├── datos.csv                           # Tu archivo real (ignorar en Git)
-├── Vacaciones.csv                      # Datos de vacaciones (Año;Destino;Coste)
+├── app.js                              # Lógica dashboard principal
+├── compras.js                          # Lógica dashboard compras
+├── server.js                           # Servidor API Node.js (NUEVO)
+├── package.json                        # Dependencias Node.js (NUEVO)
+├── start.bat                           # Script inicio automático
+├── datos_ejemplo.csv                   # Datos de prueba
+├── datos.csv                           # Archivo real movimientos bancarios
+├── Vacaciones.csv                      # Datos de vacaciones
+├── Compras-online/                     # Archivos CSV de compras por año
+│   ├── 2024.csv
+│   ├── 2025.csv
+│   └── 2026.csv                        # Se crea automáticamente
+├── INSTRUCCIONES_SERVIDOR.md           # Guía del servidor (NUEVO)
 └── README.md                           # Este archivo
 ```
+
+## 🛍️ Sistema de Compras Online
+
+El dashboard incluye un sistema completo para gestionar compras online:
+
+### Características:
+- ✅ **Guardado automático** en archivos CSV por año
+- ✅ **Creación automática** de archivos si no existen
+- ✅ Seguimiento de estado (Pendiente/Recibido)
+- ✅ Cálculo de ahorros por ofertas
+- ✅ Filtros por tienda, estado y año
+- ✅ Estadísticas y gráficos
+
+### Cómo funciona:
+1. El servidor Node.js (`server.js`) gestiona la escritura de archivos CSV
+2. Cuando añades/editas/eliminas una compra, se guarda automáticamente en `Compras-online/{año}.csv`
+3. Si el archivo del año no existe, se crea automáticamente
+4. Los datos persisten en archivos CSV (no se pierden al cerrar el navegador)
 
 ## 🎨 Personalización
 

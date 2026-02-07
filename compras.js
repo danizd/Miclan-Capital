@@ -1,6 +1,8 @@
 // ===========================
 // CONFIGURACIÓN Y UTILIDADES
 // ===========================
+const API_URL = 'http://localhost:3000/api';
+
 const CONFIG = {
     CHART_COLORS: {
         categories: [
@@ -161,9 +163,76 @@ async function loadComprasOnlineData() {
         }
     }
 
-    // Load 2026 data from localStorage
-    const data2026 = JSON.parse(localStorage.getItem('compras2026') || '[]');
-    allCompras.push(...data2026);
+    // Load 2026 data from CSV file (same as other years)
+    try {
+        const response = await fetch(`Compras-online/2026.csv`);
+        if (response.ok) {
+            const text = await response.text();
+            const result = Papa.parse(text, {
+                header: false,
+                skipEmptyLines: true
+            });
+
+            const rows = result.data;
+            let headerRowIndex = -1;
+            const colMap = {
+                producto: -1,
+                fecha: -1,
+                tienda: -1,
+                estado: -1,
+                precio: -1,
+                precioSinOferta: -1
+            };
+
+            // Find header row
+            for (let i = 0; i < Math.min(rows.length, 10); i++) {
+                const rowNormalized = rows[i].map(cell => cell ? cell.toString().trim().toLowerCase() : '');
+                if (rowNormalized.includes('producto') && (rowNormalized.includes('fecha') || rowNormalized.includes('precio'))) {
+                    headerRowIndex = i;
+                    rowNormalized.forEach((cell, index) => {
+                        if (cell === 'producto') colMap.producto = index;
+                        else if (cell === 'fecha') colMap.fecha = index;
+                        else if (cell === 'tienda') colMap.tienda = index;
+                        else if (cell === 'estado') colMap.estado = index;
+                        else if (cell === 'precio') colMap.precio = index;
+                        else if (cell === 'precio sin oferta') colMap.precioSinOferta = index;
+                    });
+                    break;
+                }
+            }
+
+            if (headerRowIndex !== -1) {
+                for (let i = headerRowIndex + 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row || row.length < 2) continue;
+
+                    const producto = colMap.producto !== -1 ? row[colMap.producto]?.trim() : null;
+                    const fecha = colMap.fecha !== -1 ? row[colMap.fecha]?.trim() : null;
+                    const precioStr = colMap.precio !== -1 ? row[colMap.precio]?.trim() : null;
+
+                    if (!producto || !fecha || !precioStr) continue;
+
+                    const tienda = colMap.tienda !== -1 ? (row[colMap.tienda]?.trim() || 'Sin tienda') : 'Sin tienda';
+                    const estado = colMap.estado !== -1 ? (row[colMap.estado]?.trim() || 'Recibido') : 'Recibido';
+                    const precioSinOfertaStr = colMap.precioSinOferta !== -1 ? row[colMap.precioSinOferta]?.trim() : '';
+
+                    allCompras.push({
+                        id: `2026-${allCompras.length}`,
+                        producto,
+                        fecha,
+                        tienda,
+                        estado,
+                        precio: utils.parseAmount(precioStr),
+                        precioSinOferta: precioSinOfertaStr ? utils.parseAmount(precioSinOfertaStr) : 0,
+                        year: 2026,
+                        source: 'csv'
+                    });
+                }
+            }
+        }
+    } catch (error) {
+        console.warn('No se pudo cargar 2026.csv:', error);
+    }
 
     comprasState.allData = allCompras;
     comprasState.filteredData = allCompras;
@@ -544,40 +613,63 @@ function updateComprasTable() {
 // ===========================
 // ACCIONES
 // ===========================
-function toggleCompraStatus(id) {
+async function toggleCompraStatus(id) {
     const compra = comprasState.allData.find(c => c.id === id);
     if (!compra) return;
 
     compra.estado = compra.estado === 'Recibido' ? 'Pendiente' : 'Recibido';
 
-    // Save to localStorage if it's 2026 data
-    if (compra.year === 2026) {
-        const data2026 = comprasState.allData.filter(c => c.year === 2026);
-        localStorage.setItem('compras2026', JSON.stringify(data2026));
-    }
+    // Save to backend
+    await saveComprasToFile(compra.year);
 
     updateComprasSection();
 }
 
-function deleteCompra(id) {
+async function deleteCompra(id) {
     if (!confirm('¿Estás seguro de eliminar esta compra?')) return;
 
     const index = comprasState.allData.findIndex(c => c.id === id);
     if (index === -1) return;
 
     const compra = comprasState.allData[index];
+    const year = compra.year;
     comprasState.allData.splice(index, 1);
 
-    // Update localStorage if it's 2026 data
-    if (compra.year === 2026) {
-        const data2026 = comprasState.allData.filter(c => c.year === 2026);
-        localStorage.setItem('compras2026', JSON.stringify(data2026));
-    }
+    // Save to backend
+    await saveComprasToFile(year);
 
     applyComprasFilters();
 }
 
-function addNewCompra(event) {
+// Función para guardar compras en archivo CSV vía backend
+async function saveComprasToFile(year) {
+    try {
+        const comprasYear = comprasState.allData.filter(c => c.year === year);
+        
+        const response = await fetch(`${API_URL}/compras/save`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                year: year,
+                compras: comprasYear
+            })
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            console.error('Error guardando compras:', result.error);
+            alert(`Error al guardar: ${result.error}`);
+        }
+    } catch (error) {
+        console.error('Error conectando con el servidor:', error);
+        alert('Error al guardar. Asegúrate de que el servidor esté ejecutándose.');
+    }
+}
+
+async function addNewCompra(event) {
     event.preventDefault();
 
     const producto = document.getElementById('compra-producto').value.trim();
@@ -591,27 +683,27 @@ function addNewCompra(event) {
         return;
     }
 
-    // Convert date to DD/MM/YYYY format
+    // Convert date to DD/MM/YYYY format and extract year
     const dateObj = new Date(fecha);
-    const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${dateObj.getFullYear()}`;
+    const year = dateObj.getFullYear();
+    const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}/${(dateObj.getMonth() + 1).toString().padStart(2, '0')}/${year}`;
 
     const newCompra = {
-        id: `2026-${Date.now()}`,
+        id: `${year}-${Date.now()}`,
         producto,
         fecha: formattedDate,
         tienda,
         estado: 'Pendiente',
         precio,
         precioSinOferta,
-        year: 2026,
+        year: year,
         source: 'local'
     };
 
     comprasState.allData.push(newCompra);
 
-    // Save to localStorage
-    const data2026 = comprasState.allData.filter(c => c.year === 2026);
-    localStorage.setItem('compras2026', JSON.stringify(data2026));
+    // Save to backend
+    await saveComprasToFile(newCompra.year);
 
     // Reset form
     document.getElementById('compras-form').reset();
