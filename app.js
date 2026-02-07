@@ -111,7 +111,7 @@ async function loadData(fileContent = null) {
             mainCsv = fileContent;
         } else {
             // Estrategia de carga dinámica (Orden de prioridad)
-            const filesToTry = ['datos.csv', 'Cuentas_casa+elena2015-2025.csv', 'datos_ejemplo.csv'];
+            const filesToTry = ['datos.csv', 'Cuentas_casa+elena2015-2025.csv', 'datos_ejemplo.csv', 'Vacaciones.csv'];
 
             for (const fileName of filesToTry) {
                 try {
@@ -140,13 +140,13 @@ async function loadData(fileContent = null) {
             if (!mainCsv) throw new Error('No se pudo encontrar ningún archivo CSV');
         }
 
-        // Carga robusta para Vacaciones con encoding Windows-1252
+        // Carga robusta para Vacaciones con encoding UTF-8
         let vacationsCsv = "";
         try {
             const responseVac = await fetch('Vacaciones.csv');
             if (responseVac.ok) {
                 const bufferVac = await responseVac.arrayBuffer();
-                const decoder = new TextDecoder('windows-1252');
+                const decoder = new TextDecoder('utf-8');
                 vacationsCsv = decoder.decode(bufferVac);
             }
         } catch (e) {
