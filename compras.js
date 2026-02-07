@@ -1,8 +1,8 @@
 // ===========================
 // CONFIGURACIÓN Y UTILIDADES
 // ===========================
-// Detectar si estamos en producción (Docker) o desarrollo (local)
-const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000/api' : '/api';
+// API en el mismo servidor
+const API_URL = '/api';
 
 const CONFIG = {
     CHART_COLORS: {

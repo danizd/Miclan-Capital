@@ -1,31 +1,23 @@
-# Usar imagen base ligera de Nginx
-FROM nginx:alpine
+# Usar Node.js como base
+FROM node:18-alpine
 
-# Copiar los archivos del proyecto al directorio público de Nginx
-COPY index.html compras.html styles.css app.js compras.js /usr/share/nginx/html/
-COPY datos_ejemplo.csv Vacaciones.csv /usr/share/nginx/html/
-COPY capturas /usr/share/nginx/html/capturas
-COPY Compras-online /usr/share/nginx/html/Compras-online
+# Crear directorio de trabajo
+WORKDIR /app
 
-# Configuración de Nginx para proxy API
-RUN echo 'server { \
-    listen 80; \
-    location / { \
-        root /usr/share/nginx/html; \
-        index index.html; \
-    } \
-    location /api/ { \
-        proxy_pass http://api:3000/api/; \
-        proxy_http_version 1.1; \
-        proxy_set_header Upgrade $http_upgrade; \
-        proxy_set_header Connection "upgrade"; \
-        proxy_set_header Host $host; \
-        proxy_cache_bypass $http_upgrade; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+# Copiar package.json y package-lock.json
+COPY package*.json ./
 
-# Exponer el puerto 80
-EXPOSE 80
+# Instalar dependencias
+RUN npm ci --only=production
 
-# Comando por defecto
-CMD ["nginx", "-g", "daemon off;"]
+# Copiar todos los archivos del proyecto
+COPY . .
+
+# Crear directorio para archivos CSV si no existe
+RUN mkdir -p Compras-online
+
+# Exponer puertos (3000 para API, 8000 para archivos estáticos)
+EXPOSE 8000
+
+# Iniciar el servidor
+CMD ["node", "server.js"]

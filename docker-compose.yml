@@ -1,37 +1,14 @@
 version: '3.8'
 
 services:
-  # Servidor API Node.js
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: miclan_capital_api
+  miclan-capital:
+    build: .
+    container_name: miclan_capital
     ports:
-      - "3000:3000"
+      - "8000:8000"
     volumes:
+      - ./datos.csv:/app/datos.csv
       - ./Compras-online:/app/Compras-online
     restart: unless-stopped
-    networks:
-      - miclan-network
-
-  # Servidor Web
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: miclan_capital_web
-    ports:
-      - "8000:80"
-    volumes:
-      - ./datos.csv:/usr/share/nginx/html/datos.csv
-      - ./Compras-online:/usr/share/nginx/html/Compras-online
-    restart: unless-stopped
-    depends_on:
-      - api
-    networks:
-      - miclan-network
-
-networks:
-  miclan-network:
-    driver: bridge
+    environment:
+      - PORT=8000

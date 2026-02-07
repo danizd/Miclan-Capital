@@ -4,10 +4,12 @@ const path = require('path');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());
+
+// Servir archivos estáticos desde la raíz del proyecto
 app.use(express.static('.'));
 
 // API para guardar compras en el CSV del año correspondiente
