@@ -12,7 +12,6 @@ Compras-online/2026.csv
 node_modules/
 npm-debug.log
 yarn-error.log
-package-lock.json
 
 # Archivos de sistema y logs
 *.log
