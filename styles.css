@@ -795,6 +795,24 @@ body {
     background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
 }
 
+.btn-comunidad {
+    background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+    color: white;
+    border: none;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.btn-comunidad:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+    background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
+}
+
 .btn-small {
     padding: var(--spacing-xs) var(--spacing-md);
     font-size: 0.85rem;

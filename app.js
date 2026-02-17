@@ -179,9 +179,9 @@ async function loadData(fileContent = null) {
 
     } catch (error) {
         console.error('Error loading CSVs:', error);
-        alert('Error al cargar los datos. Por favor, selecciona un archivo CSV válido usando el botón "Cargar CSV".');
+        alert('Error al cargar los datos. Por favor, asegúrate de que el archivo CSV está presente en el servidor.');
         hideLoading();
-        document.getElementById('app').style.display = 'block'; // Mostrar app aunque esté vacío para permitir cargar
+        document.getElementById('app').style.display = 'block';
     }
 }
 
@@ -1431,34 +1431,6 @@ function setupEventListeners() {
             state.currentPage++;
             updateTable();
         }
-    });
-
-    // Carga de archivo CSV local (Dinámico)
-    const uploadBtn = document.getElementById('upload-btn');
-    const csvUpload = document.getElementById('csv-upload');
-
-    uploadBtn.addEventListener('click', () => csvUpload.click());
-
-    csvUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const content = event.target.result;
-            // Reiniciar estado y cargar nuevos datos
-            state.rawData = [];
-            state.filteredData = [];
-            document.getElementById('account-filters').innerHTML = '';
-            document.getElementById('category-filter').innerHTML = '';
-
-            // Actualizar subtítulo
-            const subtitle = document.querySelector('.header-subtitle');
-            if (subtitle) subtitle.textContent = `Archivo cargado: ${file.name}`;
-
-            loadData(content);
-        };
-        reader.readAsText(file);
     });
 
     // Vista temporal
