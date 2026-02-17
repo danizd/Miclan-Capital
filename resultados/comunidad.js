@@ -17,6 +17,7 @@ const state = {
     processedData: {
         byYear: {},
         byCategory: {},
+        byCategoryYear: {}, // Nuevo
         monthlyEvolution: {},
         derramas: []
     },
@@ -65,6 +66,7 @@ function processData() {
     state.processedData = {
         byYear: {},
         byCategory: {},
+        byCategoryYear: {},
         monthlyEvolution: {},
         derramas: [],
         totals: {
@@ -80,7 +82,7 @@ function processData() {
         const mesStr = record['Mes'];
         const mesNum = parseInt(record['Mes Num']);
         const importe = parseAmount(record['Importe']);
-        const concepto = (record['Concepto'] || 'Otros').trim();
+        const concepto = getCategory(record); // Cambio aquí para usar la nueva categorización
         const archivo = record['Archivo'] || '';
 
         if (!anio || isNaN(importe)) return;
@@ -95,11 +97,13 @@ function processData() {
         state.processedData.byYear[anio].total += importe;
         state.processedData.byYear[anio].months.add(mesNum);
 
-        // 3. Por Categoría
-        if (!state.processedData.byCategory[concepto]) {
-            state.processedData.byCategory[concepto] = 0;
-        }
         state.processedData.byCategory[concepto] += importe;
+
+        // 3.1 Por Categoría y Año (para gráfico apilado)
+        if (!state.processedData.byCategoryYear[concepto]) {
+            state.processedData.byCategoryYear[concepto] = {};
+        }
+        state.processedData.byCategoryYear[concepto][anio] = (state.processedData.byCategoryYear[concepto][anio] || 0) + importe;
 
         // 4. Evolución Mensual (agrupado por año)
         if (!state.processedData.monthlyEvolution[anio]) {
@@ -131,6 +135,41 @@ function parseAmount(str) {
     return parseFloat(str.replace('.', '').replace(',', '.')) || 0;
 }
 
+function getCategory(record) {
+    const concepto = (record['Concepto'] || '').toUpperCase();
+    const archivo = (record['Archivo'] || '').toLowerCase();
+
+    if (archivo.includes('derrama') || concepto.includes('DERRAMA')) {
+        return 'Derramas extraordinarias';
+    }
+
+    if (concepto.includes('ACS') || (concepto.includes('AGUA') && concepto.includes('CALIENTE'))) {
+        return 'Agua caliente (ACS)';
+    }
+
+    if (concepto.includes('CUOTACOMUNIDAD') || concepto.includes('CUOTA COMUNIDAD')) {
+        return 'Cuota comunidad';
+    }
+
+    if (concepto.includes('CALEFACCION') || concepto.includes('GAS NATURAL') || concepto.includes('CALDERA') || concepto.includes('GAS')) {
+        return 'Calefacción y Gas';
+    }
+
+    if (concepto.includes('ASCENSOR')) {
+        return 'Ascensores';
+    }
+
+    if (concepto.includes('ELECTRICO') || concepto.includes('LUZ') || concepto.includes('ELECTRICIDAD')) {
+        return 'Electricidad';
+    }
+
+    if (concepto.includes('LIMPIEZA')) {
+        return 'Limpieza';
+    }
+
+    return 'Mantenimiento';
+}
+
 function formatEuro(num) {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(num);
 }
@@ -159,6 +198,7 @@ function renderCharts() {
     renderEvolucionChart();
     renderCategoriaChart();
     renderAnualChart();
+    renderCategoriaAnioChart();
     renderDerramasChart();
 }
 
@@ -268,6 +308,48 @@ function renderDerramasChart() {
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: { y: { beginAtZero: true, ticks: { callback: v => v + '€' } } }
+        }
+    });
+}
+
+function renderCategoriaAnioChart() {
+    const years = Object.keys(state.processedData.byYear).sort();
+    // Orden específico solicitado
+    const categories = [
+        'Agua caliente (ACS)',
+        'Cuota comunidad',
+        'Calefacción y Gas',
+        'Ascensores',
+        'Electricidad',
+        'Limpieza',
+        'Mantenimiento',
+        'Derramas extraordinarias'
+    ];
+
+    const datasets = categories.map((cat, idx) => ({
+        label: cat,
+        data: years.map(y => state.processedData.byCategoryYear[cat] ? state.processedData.byCategoryYear[cat][y] || 0 : 0),
+        backgroundColor: CONFIG.COLORS[idx % CONFIG.COLORS.length],
+        stack: 'Stack 0',
+        borderRadius: 4
+    }));
+
+    if (state.charts.categoriaAnio) state.charts.categoriaAnio.destroy();
+
+    state.charts.categoriaAnio = new Chart(document.getElementById('chartCategoriaAnio'), {
+        type: 'bar',
+        data: { labels: years, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 10, font: { size: 10 } } },
+                tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${formatEuro(ctx.raw)}` } }
+            },
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, beginAtZero: true, ticks: { callback: v => v + '€' } }
+            }
         }
     });
 }
