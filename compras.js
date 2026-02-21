@@ -78,87 +78,80 @@ async function loadComprasOnlineData() {
     const years = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
     const allCompras = [];
 
+    const parseEstado = (value) => {
+        const normalized = (value || '').toString().trim().toLowerCase();
+        if (normalized === 'pendiente') return 'Pendiente';
+        if (normalized === 'recibido') return 'Recibido';
+        if (normalized === 'no llego' || normalized === 'no llegó') return 'No llegó';
+        return null;
+    };
+
+    const parseCompraFromRow = (row, year) => {
+        if (!Array.isArray(row)) return null;
+
+        let cells = row.map(cell => (cell ?? '').toString().trim());
+        if (cells.every(cell => !cell)) return null;
+
+        // En estos CSV suelen existir 2 columnas vacías iniciales por formato visual
+        let removedLeading = 0;
+        while (removedLeading < 2 && cells.length > 0 && cells[0] === '') {
+            cells.shift();
+            removedLeading++;
+        }
+
+        const dateRegex = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+        const dateIndex = cells.findIndex(cell => dateRegex.test(cell));
+        if (dateIndex <= 0) return null;
+
+        const estadoIndex = cells.findIndex((cell, index) => index > dateIndex && parseEstado(cell));
+        if (estadoIndex === -1) return null;
+
+        const precioIndex = cells.findIndex((cell, index) => index > estadoIndex && /\d/.test(cell));
+        if (precioIndex === -1) return null;
+
+        const producto = cells.slice(0, dateIndex).join(',').trim();
+        const fecha = cells[dateIndex]?.trim();
+        const tienda = cells.slice(dateIndex + 1, estadoIndex).join(',').trim() || 'Sin tienda';
+        const estado = parseEstado(cells[estadoIndex]) || 'Recibido';
+        const precioStr = cells[precioIndex]?.trim();
+        const precioSinOfertaStr = cells.slice(precioIndex + 1).find(cell => cell && /\d/.test(cell)) || '';
+
+        if (!producto || !fecha || !precioStr) return null;
+
+        return {
+            id: `${year}-${allCompras.length}`,
+            producto,
+            fecha,
+            tienda,
+            estado,
+            precio: utils.parseAmount(precioStr),
+            precioSinOferta: precioSinOfertaStr ? utils.parseAmount(precioSinOfertaStr) : 0,
+            year,
+            source: 'csv'
+        };
+    };
+
+    const parseComprasCsvText = (text, year) => {
+        const result = Papa.parse(text, {
+            header: false,
+            skipEmptyLines: true
+        });
+
+        result.data.forEach((row) => {
+            const parsed = parseCompraFromRow(row, year);
+            if (parsed) {
+                allCompras.push(parsed);
+            }
+        });
+    };
+
     for (const year of years) {
         try {
             const response = await fetch(`Compras-online/${year}.csv`);
             if (!response.ok) continue;
 
             const text = await response.text();
-            const result = Papa.parse(text, {
-                header: false,
-                skipEmptyLines: true
-            });
-
-            const rows = result.data;
-            let headerRowIndex = -1;
-            const colMap = {
-                producto: -1,
-                fecha: -1,
-                tienda: -1,
-                estado: -1,
-                precio: -1,
-                precioSinOferta: -1
-            };
-
-            // Find header row dynamically
-            for (let i = 0; i < Math.min(rows.length, 10); i++) {
-                const rowNormalized = rows[i].map(cell => cell ? cell.toString().trim().toLowerCase() : '');
-
-                // Check if this row looks like a header (must contain at least 'producto' and 'fecha')
-                if (rowNormalized.includes('producto') && (rowNormalized.includes('fecha') || rowNormalized.includes('precio'))) {
-                    headerRowIndex = i;
-
-                    // Map columns
-                    rowNormalized.forEach((cell, index) => {
-                        if (cell === 'producto') colMap.producto = index;
-                        else if (cell === 'fecha') colMap.fecha = index;
-                        else if (cell === 'tienda') colMap.tienda = index;
-                        else if (cell === 'estado') colMap.estado = index;
-                        else if (cell === 'precio') colMap.precio = index;
-                        else if (cell === 'precio sin oferta') colMap.precioSinOferta = index;
-                    });
-                    break;
-                }
-            }
-
-
-
-
-            if (headerRowIndex === -1) {
-                console.warn(`AA No se encontró la fila de cabecera en ${year}.csv`);
-                continue;
-            }
-
-            // Process rows after header
-            for (let i = headerRowIndex + 1; i < rows.length; i++) {
-                const row = rows[i];
-
-                // Skip if row doesn't have enough columns or key data
-                if (!row || row.length < 2) continue;
-
-                const producto = colMap.producto !== -1 ? row[colMap.producto]?.trim() : null;
-                const fecha = colMap.fecha !== -1 ? row[colMap.fecha]?.trim() : null;
-                const precioStr = colMap.precio !== -1 ? row[colMap.precio]?.trim() : null;
-
-                // Skip rows that don't look like valid product entries (e.g. totals or empty lines)
-                if (!producto || !fecha || !precioStr) continue;
-
-                const tienda = colMap.tienda !== -1 ? (row[colMap.tienda]?.trim() || 'Sin tienda') : 'Sin tienda';
-                const estado = colMap.estado !== -1 ? (row[colMap.estado]?.trim() || 'Recibido') : 'Recibido';
-                const precioSinOfertaStr = colMap.precioSinOferta !== -1 ? row[colMap.precioSinOferta]?.trim() : '';
-
-                allCompras.push({
-                    id: `${year}-${allCompras.length}`,
-                    producto,
-                    fecha,
-                    tienda,
-                    estado,
-                    precio: utils.parseAmount(precioStr),
-                    precioSinOferta: precioSinOfertaStr ? utils.parseAmount(precioSinOfertaStr) : 0,
-                    year,
-                    source: 'csv'
-                });
-            }
+            parseComprasCsvText(text, year);
         } catch (error) {
             console.warn(`No se pudo cargar ${year}.csv:`, error);
         }
@@ -169,67 +162,7 @@ async function loadComprasOnlineData() {
         const response = await fetch(`Compras-online/2026.csv`);
         if (response.ok) {
             const text = await response.text();
-            const result = Papa.parse(text, {
-                header: false,
-                skipEmptyLines: true
-            });
-
-            const rows = result.data;
-            let headerRowIndex = -1;
-            const colMap = {
-                producto: -1,
-                fecha: -1,
-                tienda: -1,
-                estado: -1,
-                precio: -1,
-                precioSinOferta: -1
-            };
-
-            // Find header row
-            for (let i = 0; i < Math.min(rows.length, 10); i++) {
-                const rowNormalized = rows[i].map(cell => cell ? cell.toString().trim().toLowerCase() : '');
-                if (rowNormalized.includes('producto') && (rowNormalized.includes('fecha') || rowNormalized.includes('precio'))) {
-                    headerRowIndex = i;
-                    rowNormalized.forEach((cell, index) => {
-                        if (cell === 'producto') colMap.producto = index;
-                        else if (cell === 'fecha') colMap.fecha = index;
-                        else if (cell === 'tienda') colMap.tienda = index;
-                        else if (cell === 'estado') colMap.estado = index;
-                        else if (cell === 'precio') colMap.precio = index;
-                        else if (cell === 'precio sin oferta') colMap.precioSinOferta = index;
-                    });
-                    break;
-                }
-            }
-
-            if (headerRowIndex !== -1) {
-                for (let i = headerRowIndex + 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    if (!row || row.length < 2) continue;
-
-                    const producto = colMap.producto !== -1 ? row[colMap.producto]?.trim() : null;
-                    const fecha = colMap.fecha !== -1 ? row[colMap.fecha]?.trim() : null;
-                    const precioStr = colMap.precio !== -1 ? row[colMap.precio]?.trim() : null;
-
-                    if (!producto || !fecha || !precioStr) continue;
-
-                    const tienda = colMap.tienda !== -1 ? (row[colMap.tienda]?.trim() || 'Sin tienda') : 'Sin tienda';
-                    const estado = colMap.estado !== -1 ? (row[colMap.estado]?.trim() || 'Recibido') : 'Recibido';
-                    const precioSinOfertaStr = colMap.precioSinOferta !== -1 ? row[colMap.precioSinOferta]?.trim() : '';
-
-                    allCompras.push({
-                        id: `2026-${allCompras.length}`,
-                        producto,
-                        fecha,
-                        tienda,
-                        estado,
-                        precio: utils.parseAmount(precioStr),
-                        precioSinOferta: precioSinOfertaStr ? utils.parseAmount(precioSinOfertaStr) : 0,
-                        year: 2026,
-                        source: 'csv'
-                    });
-                }
-            }
+            parseComprasCsvText(text, 2026);
         }
     } catch (error) {
         console.warn('No se pudo cargar 2026.csv:', error);
@@ -723,26 +656,28 @@ function exportCompras2026() {
         return;
     }
 
-    // Create CSV content matching the original format
+    // Create CSV content matching the original format (con escape correcto de campos)
     const csvRows = [
         ['', '', '', '', '', '', '', ''],
         ['', '', 'Compras Online 2026', '', '', '', '', ''],
-        ['', '', 'Producto', 'Fecha', 'Tienda', 'Estado', 'Precio', 'Precio sin oferta']
-    ];
-
-    data2026.forEach(c => {
-        csvRows.push([
-            '', '',
+        ['', '', 'Producto', 'Fecha', 'Tienda', 'Estado', 'Precio', 'Precio sin oferta'],
+        ...data2026.map(c => ([
+            '',
+            '',
             c.producto,
             c.fecha,
             c.tienda,
             c.estado,
-            `"${c.precio.toFixed(2)} €"`,
-            c.precioSinOferta > 0 ? `"${c.precioSinOferta.toFixed(2)} €"` : ''
-        ]);
-    });
+            `${c.precio.toFixed(2)} €`,
+            c.precioSinOferta > 0 ? `${c.precioSinOferta.toFixed(2)} €` : ''
+        ]))
+    ];
 
-    const csv = csvRows.map(row => row.join(',')).join('\r\n');
+    const csv = Papa.unparse(csvRows, {
+        delimiter: ',',
+        newline: '\r\n',
+        quotes: false
+    });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
